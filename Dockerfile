@@ -20,12 +20,6 @@ LABEL maintainer="aptalca"
 ENV DHLEVEL=2048 ONLY_SUBDOMAINS=false AWS_CONFIG_FILE=/config/dns-conf/route53.ini
 ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=2
 
-# add local files
-COPY root/ /
-
-# copy form builder
-COPY --from=builder /tmp/acme-dns /app
-
 RUN \
  echo "**** install build packages ****" && \
  apk add --no-cache --virtual=build-dependencies \
@@ -148,6 +142,7 @@ RUN \
 	/defaults/proxy-confs --strip-components=1 --exclude=linux*/.gitattributes --exclude=linux*/.github --exclude=linux*/.gitignore --exclude=linux*/LICENSE && \
  echo "**** configure nginx ****" && \
  rm -f /etc/nginx/conf.d/default.conf && \
+ mkdir -p /app/acme-dns && \
  curl -o /app/acme-dns-auth.py \
   https://raw.githubusercontent.com/joohoi/acme-dns-certbot-joohoi/master/acme-dns-auth.py && \
  chmod 0700 /app/acme-dns/acme-dns-auth.py && \
@@ -163,3 +158,9 @@ RUN \
  rm -rf \
 	/tmp/* \
 	/root/.cache
+
+  # add local files
+  COPY root/ /
+
+  # copy from builder
+  COPY --from=builder /tmp/acme-dns /app
