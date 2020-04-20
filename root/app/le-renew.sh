@@ -15,7 +15,7 @@ if [ "$ORIGVALIDATION" = "dns" ] || [ "$ORIGVALIDATION" = "duckdns" ]; then
     sleep 1 && \
     cat privkey.pem fullchain.pem > priv-fullchain-bundle.pem"
 elif [ "$ORIGVALIDATION" = "acme-dns" ]; then
-  IPADDRESS = $(curl ifconfig.co) && \
+  IPADDRESS=$(curl ifconfig.co) && \
   sed 's/^(.*\".* A )\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\"/\1${IPADDRESS}/g' -i /app/acme-dns/acme-dns.conf && \
   /app/acme-dns/acme-dns -c /config/acme-dns/acme-dns.conf & \
   pid=$! && \
