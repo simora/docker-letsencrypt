@@ -143,7 +143,7 @@ RUN \
  echo "**** configure nginx ****" && \
  rm -f /etc/nginx/conf.d/default.conf && \
  mkdir -p /app/acme-dns && \
- curl -o /app/acme-dns-auth.py \
+ curl -o /app/acme-dns/acme-dns-auth.py \
   https://raw.githubusercontent.com/joohoi/acme-dns-certbot-joohoi/master/acme-dns-auth.py && \
  chmod 0700 /app/acme-dns/acme-dns-auth.py && \
  sed 's/^ACMEDNS_URL =.*$/ACMEDNS_URL = \"https:\/\/localhost:8443\"/g' -i /app/acme-dns/acme-dns-auth.py && \
