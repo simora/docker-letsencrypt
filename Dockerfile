@@ -142,7 +142,7 @@ RUN \
 	/defaults/proxy-confs --strip-components=1 --exclude=linux*/.gitattributes --exclude=linux*/.github --exclude=linux*/.gitignore --exclude=linux*/LICENSE && \
  echo "**** configure nginx ****" && \
  rm -f /etc/nginx/conf.d/default.conf && \
- mkdir -p /app/acme-dns && \
+ mkdir -p /app/acme-dns/ && \
  curl -o /app/acme-dns/acme-dns-auth.py \
   https://raw.githubusercontent.com/joohoi/acme-dns-certbot-joohoi/master/acme-dns-auth.py && \
  chmod 0700 /app/acme-dns/acme-dns-auth.py && \
@@ -163,4 +163,4 @@ RUN \
   COPY root/ /
 
   # copy from builder
-  COPY --from=builder /tmp/acme-dns /app
+  COPY --from=builder /tmp/acme-dns /app/acme-dns
