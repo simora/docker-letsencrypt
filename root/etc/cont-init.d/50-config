@@ -186,9 +186,8 @@ if [ "$VALIDATION" = "dns" ]; then
   elif [[ "$DNSPLUGIN" =~ ^(aliyun|domeneshop|inwx|transip)$ ]]; then
     PREFCHAL="-a certbot-dns-${DNSPLUGIN}:dns-${DNSPLUGIN} --certbot-dns-${DNSPLUGIN}:dns-${DNSPLUGIN}-credentials /config/dns-conf/${DNSPLUGIN}.ini --manual-public-ip-logging-ok --certbot-dns-${DNSPLUGIN}:dns-${DNSPLUGIN}-propagation-seconds 180"
 	elif [ "$DNSPLUGIN" = "acme-dns" ]; then
-		PREFCHAL="--non-interactive --manual --preffed-challenges dns --manual-public-ip-logging-ok"
 		echo "acme-dns plugin selected"
-		echo "perform all necessary interactive dns manipulations to successfully renew your certificate"
+		echo "ensure you have performed all necessary interactive dns manipulations to successfully renew your certificate"
   else
     PREFCHAL="--dns-${DNSPLUGIN} --dns-${DNSPLUGIN}-credentials /config/dns-conf/${DNSPLUGIN}.ini --manual-public-ip-logging-ok"
   fi
@@ -246,9 +245,13 @@ fi
 
 # generating certs if necessary
 if [ ! -f "/config/keys/letsencrypt/fullchain.pem" ]; then
+	if [ "$DNSPLUGIN" = "acme-dns" ]; then
+		echo "Cert does not exist. Open a console on this container to complete certificate creation"
+		sleep infinity
+	fi
   echo "Generating new certificate"
- # shellcheck disable=SC2086
- certbot certonly --renew-by-default --server $ACMESERVER $PREFCHAL --rsa-key-size 4096 $EMAILPARAM --agree-tos $URL_REAL
+  # shellcheck disable=SC2086
+  certbot certonly --renew-by-default --server $ACMESERVER $PREFCHAL --rsa-key-size 4096 $EMAILPARAM --agree-tos $URL_REAL
   if [ -d /config/keys/letsencrypt ]; then
     cd /config/keys/letsencrypt || exit
   else
@@ -256,9 +259,7 @@ if [ ! -f "/config/keys/letsencrypt/fullchain.pem" ]; then
       echo "ERROR: Cert does not exist! Please see the validation error above. Make sure you entered correct credentials into the /config/dns-conf/${FILENAME} file."
     elif [ "$VALIDATION" = "duckdns" ]; then
       echo "ERROR: Cert does not exist! Please see the validation error above. Make sure your DUCKDNSTOKEN is correct."
-		elif [ "$DNSPLUGIN" = "acme-dns" ]; then
-			echo "Cert does not exist. Open a console on this container to complete certificate creation"
-    else
+		else
       echo "ERROR: Cert does not exist! Please see the validation error above. The issue may be due to incorrect dns or port forwarding settings. Please fix your settings and recreate the container"
     fi
     sleep infinity
