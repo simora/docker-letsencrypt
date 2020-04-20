@@ -1,3 +1,12 @@
+FROM golang:1.13-alpine AS builder
+
+RUN apk add --update gcc musl-dev git
+
+ENV GOPATH /tmp/buildcache
+RUN git clone https://github.com/joohoi/acme-dns /tmp/acme-dns
+WORKDIR /tmp/acme-dns
+RUN CGO_ENABLED=1 go build
+
 FROM lsiobase/nginx:3.11
 
 # set version label
@@ -10,6 +19,12 @@ LABEL maintainer="aptalca"
 # environment settings
 ENV DHLEVEL=2048 ONLY_SUBDOMAINS=false AWS_CONFIG_FILE=/config/dns-conf/route53.ini
 ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=2
+
+# add local files
+COPY root/ /
+
+# copy form builder
+COPY --from=builder /tmp/acme-dns /app
 
 RUN \
  echo "**** install build packages ****" && \
@@ -26,6 +41,7 @@ RUN \
 	gnupg \
 	memcached \
 	nginx \
+  ca-certificates \
 	nginx-mod-http-echo \
 	nginx-mod-http-fancyindex \
 	nginx-mod-http-geoip2 \
@@ -84,6 +100,7 @@ RUN \
 	py3-cryptography \
 	py3-future \
 	py3-pip && \
+ update-ca-certificates && \
  echo "**** install certbot plugins ****" && \
  if [ -z ${CERTBOT_VERSION+x} ]; then \
         CERTBOT="certbot"; \
@@ -131,6 +148,11 @@ RUN \
 	/defaults/proxy-confs --strip-components=1 --exclude=linux*/.gitattributes --exclude=linux*/.github --exclude=linux*/.gitignore --exclude=linux*/LICENSE && \
  echo "**** configure nginx ****" && \
  rm -f /etc/nginx/conf.d/default.conf && \
+ curl -o /app/acme-dns-auth.py \
+  https://raw.githubusercontent.com/joohoi/acme-dns-certbot-joohoi/master/acme-dns-auth.py && \
+ chmod 0700 /app/acme-dns/acme-dns-auth.py && \
+ sed 's/^ACMEDNS_URL =.*$/ACMEDNS_URL = \"https:\/\/localhost\"/g' -i /app/acme-dns/acme-dns-auth.py && \
+ sed 's/^STORAGE_PATH = .*$/STORAGE_PATH = \"\/config\/acmedns.json"/g' -i /app/acme-dns/acme-dns-auth.py && \
  echo "**** cleanup ****" && \
  apk del --purge \
 	build-dependencies && \
@@ -141,6 +163,3 @@ RUN \
  rm -rf \
 	/tmp/* \
 	/root/.cache
-
-# add local files
-COPY root/ /

@@ -35,7 +35,7 @@ done
 
 # make our folders and links
 mkdir -p \
-	/config/{log/letsencrypt,log/fail2ban,etc/letsencrypt,fail2ban,crontabs,dns-conf,geoip2db} \
+	/config/{log/letsencrypt,log/fail2ban,etc/letsencrypt,fail2ban,crontabs,dns-conf,geoip2db,acme-dns} \
 	/var/run/fail2ban
 rm -rf /etc/letsencrypt
 ln -s /config/etc/letsencrypt /etc/letsencrypt
@@ -43,6 +43,9 @@ ln -s /config/etc/letsencrypt /etc/letsencrypt
 # copy dns default configs
 cp -n /defaults/dns-conf/* /config/dns-conf/
 chown -R abc:abc /config/dns-conf
+
+# copy acme-dns default configs
+cp /defaults/acme-dns.cfg /config/acme-dns/config.cfg
 
 # copy reverse proxy configs
 cp -R /defaults/proxy-confs /config/nginx/
