@@ -151,8 +151,8 @@ RUN \
  curl -o /app/acme-dns-auth.py \
   https://raw.githubusercontent.com/joohoi/acme-dns-certbot-joohoi/master/acme-dns-auth.py && \
  chmod 0700 /app/acme-dns/acme-dns-auth.py && \
- sed 's/^ACMEDNS_URL =.*$/ACMEDNS_URL = \"https:\/\/localhost\"/g' -i /app/acme-dns/acme-dns-auth.py && \
- sed 's/^STORAGE_PATH = .*$/STORAGE_PATH = \"\/config\/acmedns.json"/g' -i /app/acme-dns/acme-dns-auth.py && \
+ sed 's/^ACMEDNS_URL =.*$/ACMEDNS_URL = \"https:\/\/localhost:8443\"/g' -i /app/acme-dns/acme-dns-auth.py && \
+ sed 's/^STORAGE_PATH = .*$/STORAGE_PATH = \"\/config\/acme-dns/acmedns.json"/g' -i /app/acme-dns/acme-dns-auth.py && \
  echo "**** cleanup ****" && \
  apk del --purge \
 	build-dependencies && \
