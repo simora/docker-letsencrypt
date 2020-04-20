@@ -15,7 +15,7 @@ if [ "$ORIGVALIDATION" = "dns" ] || [ "$ORIGVALIDATION" = "duckdns" ]; then
     sleep 1 && \
     cat privkey.pem fullchain.pem > priv-fullchain-bundle.pem"
 elif [ "$ORIGVALIDATION" = "acme-dns" ]; then
-  /app/acme-dns/acme-dns & \
+  /app/acme-dns/acme-dns -c /config/acme-dns/acme-dns.conf & \
   pid=$! && \
   certbot -n renew \
     --post-hook "if ps aux | grep [n]ginx: > /dev/null; then s6-svc -h /var/run/s6/services/nginx; fi; \

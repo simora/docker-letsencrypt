@@ -45,7 +45,7 @@ cp -n /defaults/dns-conf/* /config/dns-conf/
 chown -R abc:abc /config/dns-conf
 
 # copy acme-dns default configs
-cp /defaults/acme-dns.cfg /config/acme-dns/config.cfg
+cp -n /defaults/acme-dns.conf /config/acme-dns/acme-dns.conf
 
 # copy reverse proxy configs
 cp -R /defaults/proxy-confs /config/nginx/
