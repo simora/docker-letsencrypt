@@ -79,7 +79,7 @@ cp /config/fail2ban/jail.local /etc/fail2ban/jail.local
 	cp /defaults/ldap.conf /config/nginx/ldap.conf
 
 # check to make sure DNSPLUGIN is selected if dns validation is used
-[[ "$VALIDATION" = "dns" ]] && [[ ! "$DNSPLUGIN" =~ ^(aliyun|cloudflare|cloudxns|cpanel|digitalocean|dnsimple|dnsmadeeasy|domeneshop|gandi|google|inwx|linode|luadns|nsone|ovh|rfc2136|route53|transip)$ ]] && \
+[[ "$VALIDATION" = "dns" ]] && [[ ! "$DNSPLUGIN" =~ ^(aliyun|cloudflare|cloudxns|cpanel|digitalocean|dnsimple|dnsmadeeasy|domeneshop|gandi|google|inwx|linode|luadns|nsone|ovh|rfc2136|route53|transip|acme-dns)$ ]] && \
   echo "Please set the DNSPLUGIN variable to a valid plugin name. See docker info for more details." && \
   sleep infinity
 
@@ -185,6 +185,10 @@ if [ "$VALIDATION" = "dns" ]; then
     PREFCHAL="--dns-${DNSPLUGIN} --dns-${DNSPLUGIN}-credentials /config/dns-conf/${DNSPLUGIN}.json --manual-public-ip-logging-ok --dns-${DNSPLUGIN}-propagation-seconds 120"
   elif [[ "$DNSPLUGIN" =~ ^(aliyun|domeneshop|inwx|transip)$ ]]; then
     PREFCHAL="-a certbot-dns-${DNSPLUGIN}:dns-${DNSPLUGIN} --certbot-dns-${DNSPLUGIN}:dns-${DNSPLUGIN}-credentials /config/dns-conf/${DNSPLUGIN}.ini --manual-public-ip-logging-ok --certbot-dns-${DNSPLUGIN}:dns-${DNSPLUGIN}-propagation-seconds 180"
+	elif [ "$DNSPLUGIN" = "acme-dns" ]; then
+		PREFCHAL="--non-interactive --standalone"
+		echo "acme-dns plugin selected"
+		echo "perform all necessary interactive dns manipulations to successfully renew your certificate"
   else
     PREFCHAL="--dns-${DNSPLUGIN} --dns-${DNSPLUGIN}-credentials /config/dns-conf/${DNSPLUGIN}.ini --manual-public-ip-logging-ok"
   fi
@@ -192,10 +196,6 @@ if [ "$VALIDATION" = "dns" ]; then
 elif [ "$VALIDATION" = "tls-sni" ]; then
   PREFCHAL="--non-interactive --standalone --preferred-challenges http"
   echo "*****tls-sni validation has been deprecated, attempting http validation instead"
-elif [ "$VALIDATION" = "acme-dns" ]; then
-	PREFCHAL="--non-interactive --standalone"
-	echo "acme-dns validation is selected"
-	echo "perform all necessary interactive dns manipulations to successfully renew your certificate"
 elif [ "$VALIDATION" = "duckdns" ]; then
   PREFCHAL="--non-interactive --manual --preferred-challenges dns --manual-public-ip-logging-ok --manual-auth-hook /app/duckdns-txt"
   chmod +x /app/duckdns-txt
@@ -256,6 +256,8 @@ if [ ! -f "/config/keys/letsencrypt/fullchain.pem" ]; then
       echo "ERROR: Cert does not exist! Please see the validation error above. Make sure you entered correct credentials into the /config/dns-conf/${FILENAME} file."
     elif [ "$VALIDATION" = "duckdns" ]; then
       echo "ERROR: Cert does not exist! Please see the validation error above. Make sure your DUCKDNSTOKEN is correct."
+		elif [ "$DNSPLUGIN" = "acme-dns" ]; then
+			echo "Cert does not exist. Open a console on this container to complete certificate creation"
     else
       echo "ERROR: Cert does not exist! Please see the validation error above. The issue may be due to incorrect dns or port forwarding settings. Please fix your settings and recreate the container"
     fi
