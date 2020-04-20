@@ -186,7 +186,7 @@ if [ "$VALIDATION" = "dns" ]; then
   elif [[ "$DNSPLUGIN" =~ ^(aliyun|domeneshop|inwx|transip)$ ]]; then
     PREFCHAL="-a certbot-dns-${DNSPLUGIN}:dns-${DNSPLUGIN} --certbot-dns-${DNSPLUGIN}:dns-${DNSPLUGIN}-credentials /config/dns-conf/${DNSPLUGIN}.ini --manual-public-ip-logging-ok --certbot-dns-${DNSPLUGIN}:dns-${DNSPLUGIN}-propagation-seconds 180"
 	elif [ "$DNSPLUGIN" = "acme-dns" ]; then
-		PREFCHAL="--non-interactive --standalone"
+		PREFCHAL="--non-interactive --manual --preffed-challenges dns --manual-public-ip-logging-ok"
 		echo "acme-dns plugin selected"
 		echo "perform all necessary interactive dns manipulations to successfully renew your certificate"
   else
